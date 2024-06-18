@@ -232,8 +232,55 @@ int aboutToWin(char checkerboard[], char aiSymbol, char playerSymbol)
 	return finalStep;
 }
 
+// AI閃過陷阱用(彤彤測出的)
+int trapThree(char checkerboard[], char playerSymbol)
+{
+	int deadStep = 10;
+	// 對角線 
+    if (checkerboard[0] == checkerboard[4] && checkerboard[4] != checkerboard[8])
+    {
+        deadStep = 2;
+    }
+    if (checkerboard[8] == checkerboard[4] && checkerboard[4] != checkerboard[0])
+    {
+        deadStep = 2;
+    }
+    if (checkerboard[6] == checkerboard[4] && checkerboard[4] != checkerboard[2])
+    {
+        deadStep = 0;
+    }
+    if (checkerboard[2] == checkerboard[4] && checkerboard[4] != checkerboard[6])
+    {
+        deadStep = 0;
+    }
+    return deadStep;
+}
+
+// AI閃過陷阱用(哲寬測出的) 
+int trapTwo(char checkerboard[], char playerSymbol)
+{
+	int avoidStep = 10;
+	if (checkerboard[1] == playerSymbol && checkerboard[5] == playerSymbol)
+	{
+		avoidStep = 2;
+	}
+	if (checkerboard[5] == playerSymbol && checkerboard[7] == playerSymbol)
+	{
+		avoidStep = 8;
+	}
+	if (checkerboard[7] == playerSymbol && checkerboard[3] == playerSymbol)
+	{
+		avoidStep = 6;
+	}
+	if (checkerboard[3] == playerSymbol && checkerboard[1] == playerSymbol)
+	{
+		avoidStep = 0;
+	}
+	return avoidStep;
+}
+
 // AI閃過陷阱用 
-int trap(char checkerboard[], char playerSymbol)
+int trapOne(char checkerboard[], char playerSymbol)
 {
 	int avoidStep = 10;
 	int mids[] = {1, 3, 5, 7};
@@ -288,7 +335,7 @@ void aiInput(char checkerboard[], char aiSymbol, char difficulty, int steps)
 		}
 		else 
 		{
-			bool done;
+			bool done = false;
 			// 重複隨機下直到可以 
     		while (!done)
 			{
@@ -322,8 +369,15 @@ void aiInput(char checkerboard[], char aiSymbol, char difficulty, int steps)
 	{
 		// 判斷AI是否即將獲勝
     	int finalStep = aboutToWin(checkerboard, aiSymbol, playerSymbol);
+    	// 判斷AI是否即將敗北 
     	int defenseStep = aboutToLose(checkerboard, aiSymbol, playerSymbol);
-    	int avoidStep = trap(checkerboard, playerSymbol);
+    	// 躲開包夾陷阱 
+    	int avoidStep = trapOne(checkerboard, playerSymbol);
+    	// 躲開圍攻陷阱 
+    	int dodgeStep = trapTwo(checkerboard, playerSymbol);
+    	// 躲開死路陷阱
+		int deadStep = trapThree(checkerboard, playerSymbol);
+    	
     	if (finalStep != 10)
     	{
     		printf("勝利步：%d\n", finalStep+1);
@@ -344,7 +398,7 @@ void aiInput(char checkerboard[], char aiSymbol, char difficulty, int steps)
 			if (checkerboard[4] != aiSymbol && checkerboard[4] != playerSymbol)
 			{
 				printf("下中間\n");
-				printf("AI下在%d\n", 4);
+				printf("AI下在%d\n", 5);
 				checkerboard[4] = aiSymbol;
 			}
 			else
@@ -364,9 +418,21 @@ void aiInput(char checkerboard[], char aiSymbol, char difficulty, int steps)
 			checkerboard[avoidStep] = aiSymbol;
 			printf("AI下在%d\n", avoidStep+1);
 		}
+		else if (steps == 1 && dodgeStep != 10)
+		{
+			printf("躲陷阱(哲寬)\n");
+			checkerboard[dodgeStep] = aiSymbol;
+			printf("AI下在%d\n", dodgeStep+1);
+		}
+		else if (steps == 1 && deadStep != 10)
+		{
+			printf("躲陷阱(彤彤)\n");
+			checkerboard[deadStep] = aiSymbol;
+			printf("AI下在%d\n", deadStep+1);
+		}
 		else
 		{
-			bool done;
+			bool done = false;
 			// 重複隨機下直到可以 
     		while (!done)
 			{
@@ -394,7 +460,7 @@ void aiInput(char checkerboard[], char aiSymbol, char difficulty, int steps)
 // 玩家輸入
 void playerInput(char checkerboard[], char symbol, char mode)
 {
-    bool done;
+    bool done = false;
     char number;
     if (mode == 's')
 	{
@@ -587,7 +653,7 @@ void singleMode(char checkerboard[])
     printf("接下來會有電腦玩家陪您遊玩\n");
     getchar();
     char difficulty;
-    bool done;
+    bool done = false;
     // 難度選擇
     printf("請選擇容易或困難的難易度(E/H):");
     while (!done)
@@ -672,7 +738,7 @@ void modeSelect()
 {
 	getchar();
     char mode;
-    bool done;
+    bool done = false;
     printf("選擇單人或雙人模式(S/D)：");
     while (!done)
     {
